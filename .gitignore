@@ -1,0 +1,111 @@
+# Restoration-Intel Project .gitignore
+
+# Environment Files
+.env
+.env.local
+.env.docker
+.env.development
+.env.production
+*.env
+
+# Dependency Directories
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build Output
+dist/
+build/
+out/
+.next/
+.nuxt/
+
+# Python Bytecode and Compiled Files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual Environments
+venv/
+env/
+.venv/
+.env/
+
+# IDE and Editor Directories
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS Generated Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Docker and Container Artifacts
+.docker/
+docker-compose.override.yml
+*.dockerfile.local
+
+# Backup and Temporary Files
+*.bak
+*.tmp
+*.swp
+*.swo
+
+# Machine Learning and Data Science
+*.pkl
+*.joblib
+*.model
+*.h5
+*.hdf5
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# Supabase Local Development
+supabase/.branches
+supabase/.temp
+supabase/.env
+
+# Metrics and Logging
+*.metrics
+*.profraw
+
+# Security and Sensitive Data
+*.pem
+*.key
+*.crt
+secrets/
+
+# Performance and Profiling
+*.prof
+*.heap
+
+# Frontend Build Artifacts
+.vercel
+.netlify
+.cache/
+
+# Project-Specific Exclusions
+restoration_intel_local_data/
+local_configs/
+
+# Miscellaneous
+.history/
+.angular/
+.svelte-kit/
