@@ -1,0 +1,64 @@
+# Exclude everything by default
+*
+
+# Then explicitly include only what we need
+!api/py/**
+!api/__init__.py
+!requirements.txt
+
+# Python cache files that might slip through
+**/__pycache__
+**/*.py[cod]
+**/*.so
+
+# Development and test files
+**/.env*
+!.env.example
+**/.venv
+**/tests/
+**/test_*.py
+**/*_test.py
+**/*.ipynb
+**/notebooks/
+
+# Build and cache directories
+**/.pytest_cache/
+**/.coverage
+**/htmlcov/
+**/.tox/
+**/build/
+**/dist/
+**/*.egg-info/
+
+# Version control
+**/.git/
+**/.gitignore
+**/.gitattributes
+
+# IDE and editor files
+**/.idea/
+**/.vscode/
+**/*.swp
+**/*.swo
+
+# Logs and temporary files
+**/logs/
+**/tmp/
+**/*.log
+
+# Docker files (except the ones we need)
+**/Dockerfile*
+**/docker-compose*.yml
+**/.dockerignore
+!api/Dockerfile
+
+# Data files
+**/*.csv
+**/*.xlsx
+**/*.h5
+**/*.pkl
+**/*.pickle
+**/*.parquet
+**/*.model
+**/data/
+**/datasets/

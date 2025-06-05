@@ -1,55 +1,55 @@
-# Python bytecode
+# Python specific ignores
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
+.Python
+*.egg-info/
+*.egg
+.pytest_cache/
+.coverage
 
-# Virtual environments
-venv/
-.venv/
+# Environment and local development
+.env
+.venv
 env/
+venv/
 ENV/
+.env.*
+!.env.example
 
-# Development and IDE files
-.git/
-.gitignore
+# IDE and editor folders
 .idea/
 .vscode/
 *.swp
 *.swo
-*~
 
-# Logs and databases
-*.log
-*.sqlite
-*.db
-
-# Local environment files
-.env
-.env.local
-.env.docker
-
-# Testing and coverage
-.pytest_cache/
-.coverage
-htmlcov/
-
-# Build and distribution
-build/
-dist/
-*.egg-info/
-
-# Dependency caches
-.cache/
-node_modules/
-
-# Jupyter Notebook
-.ipynb_checkpoints/
-
-# OS generated files
+# OS specific
 .DS_Store
 Thumbs.db
 
-# Specific project exclusions
+# Data and temporary files
+*.csv
+*.xlsx
+*.h5
+*.pkl
+*.pickle
+*.parquet
+*.model
+data/
 logs/
-*.temp
-*.tmp
+tmp/
+
+# Version control
+.git*
+
+# Don't need to include these in the build context
+Dockerfile
+docker-compose*.yml
+*.md
+tests/
+notebooks/
+
+# Keep only what's needed for API
+!py/
+!__init__.py

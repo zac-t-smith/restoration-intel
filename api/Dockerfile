@@ -1,69 +1,69 @@
-ARG REQUIREMENTS_PATH=requirements.txt
+# syntax=docker/dockerfile:1.4
+ARG PYTHON_VERSION=3.11
 
-FROM python:3.11-slim AS builder
+# ===== BUILDER STAGE =====
+FROM python:${PYTHON_VERSION}-slim AS builder
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PATH="/usr/local/bin:$PATH"
 
-# Set working directory
-WORKDIR /app
+WORKDIR /build
 
-# Install system dependencies and create non-root user
-# Builder stage
+# Install build dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    curl \
-    libopenblas-dev \
-    liblapack-dev \
-    gfortran \
     build-essential \
-    libpq-dev && \
-    apt-get clean && \
+    libpq-dev \
+    curl && \
     rm -rf /var/lib/apt/lists/* && \
-    addgroup --system --gid 1001 appuser && \
-    adduser --system --uid 1001 --ingroup appuser appuser
+    apt-get clean
 
+# Copy requirements first for better caching
+COPY requirements.txt .
 
-# Copy requirements file
-COPY ${REQUIREMENTS_PATH} . # Using the ARG for consistency
-
-# Install Python dependencies
-RUN pip install --no-cache-dir numpy==1.23.5 && \
+# Install dependencies with pip caching
+RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --no-cache-dir -r requirements.txt
 
-# Final stage
-FROM python:3.11-slim
+# ===== DEVELOPMENT STAGE =====
+FROM python:${PYTHON_VERSION}-slim AS development
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/usr/local/bin:$PATH" \
+    UVICORN_RELOAD=true
 
 # Install runtime dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    curl \
-    libopenblas-dev \
-    liblapack-dev && \
-    apt-get clean && \
+    libpq5 \
+    curl && \
     rm -rf /var/lib/apt/lists/* && \
+    apt-get clean && \
+    # Add non-root user
     addgroup --system --gid 1001 appuser && \
     adduser --system --uid 1001 --ingroup appuser appuser
 
-
-# Copy Python packages from builder
-COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
-
-# Set working directory
 WORKDIR /app
+
+# Copy Python packages and binaries from builder
+COPY --from=builder /usr/local /usr/local
 
 # Copy application code
 COPY api/py /app/py
-COPY api/*.py /app/
+COPY api/__init__.py /app/__init__.py
 
-# Create logs directory
-RUN mkdir -p /app/logs && \
+# Set permissions
+RUN chown -R appuser:appuser /app && \
+    chmod -R 755 /app && \
+    mkdir -p /app/logs && \
     chown -R appuser:appuser /app/logs
 
-# Switch to non-root user
 USER appuser
 
 # Expose port
@@ -71,7 +71,54 @@ EXPOSE 8000
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
-    CMD curl -f http://localhost:8000/ || exit 1
+    CMD curl -f http://localhost:8000/health || exit 1
 
-# Run application
-CMD ["uvicorn", "py.app:app", "--host", "0.0.0.0", "--port", "8000"]
+# Development mode with hot reload
+CMD ["python", "-m", "uvicorn", "py.app:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+
+# ===== PRODUCTION STAGE =====
+FROM python:${PYTHON_VERSION}-slim AS production
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PATH="/usr/local/bin:$PATH" \
+    UVICORN_RELOAD=false
+
+# Install runtime dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    libpq5 \
+    curl && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get clean && \
+    # Add non-root user
+    addgroup --system --gid 1001 appuser && \
+    adduser --system --uid 1001 --ingroup appuser appuser
+
+WORKDIR /app
+
+# Copy Python packages and binaries from builder
+COPY --from=builder /usr/local /usr/local
+
+# Copy application code
+COPY api/py /app/py
+COPY api/__init__.py /app/__init__.py
+
+# Set permissions
+RUN chown -R appuser:appuser /app && \
+    chmod -R 755 /app && \
+    mkdir -p /app/logs && \
+    chown -R appuser:appuser /app/logs
+
+USER appuser
+
+# Expose port
+EXPOSE 8000
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Production mode without hot reload
+CMD ["python", "-m", "uvicorn", "py.app:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
