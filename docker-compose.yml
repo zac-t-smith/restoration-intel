@@ -37,11 +37,11 @@ services:
       context: .
       dockerfile: api/Dockerfile
       args:
-        - REQUIREMENTS_PATH=requirements.txt # Ensure this is passed
+        - REQUIREMENTS_PATH=requirements.txt
     ports:
       - "8000:8000"
     volumes:
-      - ./api:/app/api # Ensure your 'api' directory aligns with Dockerfile's COPY commands
+      - ./api:/app/api
     depends_on:
       postgres:
         condition: service_healthy
@@ -53,7 +53,7 @@ services:
       SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:?err_no_service_role_key}
     networks:
       - restoration-net
-      
+
   nextjs:
     build:
       context: ./next-app
@@ -71,8 +71,7 @@ services:
       NODE_ENV: ${NODE_ENV:-development}
     volumes:
       - ./next-app:/app
-      - /app/node_modules
-      - /app/.next
+      - node_modules:/app/node_modules
     networks:
       - restoration-net
 
@@ -82,3 +81,4 @@ networks:
 
 volumes:
   postgres_data:
+  node_modules:

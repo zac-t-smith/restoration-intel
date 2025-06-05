@@ -12,6 +12,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 # Install system dependencies and create non-root user
+# Builder stage
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     curl \
@@ -19,11 +20,12 @@ RUN apt-get update && \
     liblapack-dev \
     gfortran \
     build-essential \
-    libpq-dev && \ # <--- ADD THIS LINE FOR PSYCOPG2
+    libpq-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     addgroup --system --gid 1001 appuser && \
     adduser --system --uid 1001 --ingroup appuser appuser
+
 
 # Copy requirements file
 COPY ${REQUIREMENTS_PATH} . # Using the ARG for consistency
@@ -40,11 +42,12 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     curl \
     libopenblas-dev \
-    liblapack-dev && \ # Note: libpq5 (runtime for postgresql client) might be good here if not implicitly included by python slim
+    liblapack-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     addgroup --system --gid 1001 appuser && \
     adduser --system --uid 1001 --ingroup appuser appuser
+
 
 # Copy Python packages from builder
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
